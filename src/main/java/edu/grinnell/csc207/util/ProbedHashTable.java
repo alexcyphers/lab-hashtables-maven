@@ -183,9 +183,12 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public V get(K key) {
+
     int index = find(key);
+
     @SuppressWarnings("unchecked")
     Pair<K, V> pair = (Pair<K, V>) pairs[index];
+
     if (pair == null) {
       if (REPORT_BASIC_CALLS && (reporter != null)) {
         reporter.report("get(" + key + ") failed");
@@ -220,8 +223,11 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public V remove(K key) {
-    // STUB
-    return null;
+    int index = find(key);
+    V val = get(key);
+    pairs[index] = null;
+    this.size--;
+    return val;
   } // remove(K)
 
   /**
@@ -309,7 +315,7 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public void clear() {
-    this.pairs = new Object[41];
+    this.pairs = new Object[5];
     this.size = 0;
   } // clear()
 
@@ -368,8 +374,18 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
     Object[] newPairs = new Object[newSize];
     // Move all pairs from the old table to their appropriate
     // location in the new table.
-    // STUB
-    // And update our pairs
+    int newCapacity = this.pairs.length * 2 + rand.nextInt(20);
+    // Create a new table of that capacity
+    Object[] old = new Object[this.pairs.length];
+    for (int i = 0; i < old.length; i++) {
+      old[i] = this.pairs[i];
+    } // for    // And update our pairs
+    this.pairs = new Object[newCapacity];
+    // Move all the values from the old table to their appropriate 
+    // location in the new table.
+    for (int i = 0; i < old.length; i++) {
+      this.pairs[i] = old[i];
+    } // for    // And update our pairs
   } // expand()
 
   /**
@@ -382,7 +398,22 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    * @return the aforementioned index.
    */
   int find(K key) {
-    return Math.abs(key.hashCode()) % this.pairs.length;
+    int index = Math.abs(key.hashCode()) % this.pairs.length;
+    int originalIndex = index;
+
+    while(pairs[index] != null) {
+      @SuppressWarnings("unchecked")
+      Pair<K, V> pair = (Pair<K, V>) pairs[index];
+      if(pair.key().equals(key)) {
+        return index;
+      }
+      index = (index + (int) PROBE_OFFSET) % this.pairs.length;
+
+      if(index == originalIndex) {
+        throw new IllegalStateException("Table is full");
+      }
+    }
+    return index;
   } // find(K)
 
 } // class ProbedHashTable<K, V>

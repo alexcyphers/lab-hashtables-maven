@@ -4,8 +4,9 @@ A lab on hash tables, structured for Maven.
 
 **Authors**
 
-* Your Name Here
-* Your Name Here
+* Alex Cyphers
+* Moise Milenge
+* Jafar Jarrar
 * Samuel A. Rebelsky (starter code)
 
 **Citations**

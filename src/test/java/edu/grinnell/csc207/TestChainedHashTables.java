@@ -1,4 +1,8 @@
+package edu.grinnell.csc207;
+
 import org.junit.jupiter.api.BeforeEach;
+
+import edu.grinnell.csc207.util.ChainedHashTable;
 
 /**
  * Tests of chained hash tables.
