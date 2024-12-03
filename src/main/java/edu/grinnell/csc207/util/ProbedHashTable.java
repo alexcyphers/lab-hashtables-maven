@@ -149,7 +149,6 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public boolean containsKey(K key) {
-    // STUB/HACK
     try {
       get(key);
       return true;
@@ -249,7 +248,8 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
     } // if there are too many entries
     // Find out where the key belongs and put the pair there.
     int index = find(key);
-    if (this.pairs[index] != null) {
+    Pair<K,V> pair = ((Pair<K, V>) this.pairs[index]);
+    if (this.pairs[index] != null && pair.key().equals(key)) {
       result = ((Pair<K, V>) this.pairs[index]).value();
     } // if
     this.pairs[index] = new Pair<K, V>(key, value);
@@ -258,7 +258,9 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
       reporter.report("pairs[" + index + "] = " + key + ":" + value);
     } // if reporter != null
     // Note that we've incremented the size.
-    ++this.size;
+    if (result == null) {
+      ++this.size;
+    } // if
     // And we're done
     return result;
   } // set(K, V)
