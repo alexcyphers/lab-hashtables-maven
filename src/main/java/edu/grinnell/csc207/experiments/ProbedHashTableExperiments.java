@@ -42,23 +42,23 @@ public class ProbedHashTableExperiments {
     htab.reportBasicCalls(false);
 
     // Conduct some of the experiments
-    HashTableExperiments.matchingKeysExpt(pen, htab);
-    HashTableExperiments.repeatedSetExpt(pen, htab);
-    HashTableExperiments.matchingSetExpt(pen, htab);
-    HashTableExperiments.multipleSetExpt(pen, htab);
-    HashTableExperiments.removeExpt(pen, htab);
+    //HashTableExperiments.matchingKeysExpt(pen, htab);
+    //HashTableExperiments.repeatedSetExpt(pen, htab);
+   // HashTableExperiments.matchingSetExpt(pen, htab);
+     HashTableExperiments.multipleSetExpt(pen, htab);
+    // HashTableExperiments.removeExpt(pen, htab);
 
-    htab.reportBasicCalls(true);
-    htab.set("alpha", "alpha");
-    htab.dump(pen);
-    htab.set("beta", "beta");
-    htab.dump(pen);
-    htab.set("bravo", "bravo");
-    htab.dump(pen);
-    htab.set("beta", "max");
-    htab.dump(pen);
-    htab.reportBasicCalls(false);
-    HashTableExperiments.checkGet(pen, htab, "bravo");
+    // htab.reportBasicCalls(true);
+    // htab.set("alpha", "alpha");
+    // htab.dump(pen);
+    // htab.set("beta", "beta");
+    // htab.dump(pen);
+    // htab.set("bravo", "bravo");
+    // htab.dump(pen);
+    // htab.set("beta", "max");
+    // htab.dump(pen);
+    // htab.reportBasicCalls(false);
+    // HashTableExperiments.checkGet(pen, htab, "bravo");
     pen.println();
   } // main(String[])
 

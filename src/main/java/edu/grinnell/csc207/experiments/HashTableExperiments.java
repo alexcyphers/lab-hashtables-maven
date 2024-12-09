@@ -63,6 +63,8 @@ public class HashTableExperiments {
   public static void repeatedSetExpt(PrintWriter pen,
       HashTable<String, String> htab) {
         htab.reportBasicCalls(true);
+    pen.println("Repeated Set Experiment");
+    pen.println("------------");
     htab.set("alpha", "alpha");
     htab.dump(pen);
     htab.set("beta", "beta");
@@ -86,6 +88,8 @@ public class HashTableExperiments {
    */
   public static void matchingKeysExpt(PrintWriter pen,
       HashTable<String, String> htab) {
+    pen.println("Matching Keys Experiment");
+    pen.println("------------");
     pen.println("Setting anteater");
     htab.set("anteater", "anteater");
     checkGet(pen, htab, "anteater");
@@ -104,6 +108,8 @@ public class HashTableExperiments {
    */
   public static void matchingSetExpt(PrintWriter pen,
       HashTable<String, String> htab) {
+        pen.println("Matching Set Experiment");
+        pen.println("------------");
     pen.println("Setting anteater");
     htab.set("anteater", "anteater");
     htab.set("buffalo", "buffalo");
