@@ -183,20 +183,27 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public V get(K key) {
-
     int index = find(key);
-
     @SuppressWarnings("unchecked")
     Pair<K, V> pair = (Pair<K, V>) pairs[index];
 
     if (pair == null) {
+      if (REPORT_BASIC_CALLS && (reporter != null)) {
+        reporter.report("get(" + key + ") failed");
+      } // if reporter != null
       throw new IndexOutOfBoundsException("Invalid key: " + key);
-    } else if (!pair.key().equals(key)) {
-      throw new IllegalArgumentException("Key in given cell doesn't match expected key: " + key);
-    }
-
+    } else {
+      if (!pair.key().equals(key)) {
+        if (REPORT_BASIC_CALLS && (reporter != null)) {
+          reporter.report("get(" + key + ") failed");
+        } // if reporter != null
+        throw new IndexOutOfBoundsException("Mismatched key: " + key);
+      } // if
+      if (REPORT_BASIC_CALLS && (reporter != null)) {
+        reporter.report("get(" + key + ") => " + pair.value());
+      } // if reporter != null
       return pair.value();
-    //} // get
+    } // get
   } // get(K)
 
   /**
@@ -221,10 +228,23 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
   @Override
   public V remove(K key) {
     int index = find(key);
-    V val = get(key);
-    pairs[index] = null;
+    @SuppressWarnings("unchecked")
+    Pair<K,V> pair = (Pair<K,V>) this.pairs[index];
+    V value = pair.value();
+    this.pairs[index] = null;
+
+    index = (index + (int) PROBE_OFFSET) % this.pairs.length;
+    while (this.pairs[index] != null) {
+      @SuppressWarnings("unchecked")
+      Pair<K,V> nextPair = (Pair<K,V>) this.pairs[index];
+      this.pairs[index] = null;
+      this.size--;
+      this.set(nextPair.key(), nextPair.value());
+      index = (index + (int) PROBE_OFFSET) % this.pairs.length;
+    } // while-loop
+
     this.size--;
-    return val;
+    return value;
   } // remove(K)
 
   /**
@@ -241,24 +261,26 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
   public V set(K key, V value) {
     V result = null;
     // If there are too many entries, expand the table.
-    if (this.size > (this.pairs.length * LOAD_FACTOR)) {
+    if (this.size >= (this.pairs.length * LOAD_FACTOR)) {
       expand();
     } // if there are too many entries
     // Find out where the key belongs and put the pair there.
     int index = find(key);
-    Pair<K,V> pair = ((Pair<K, V>) this.pairs[index]);
-    if (this.pairs[index] != null && pair.key().equals(key)) {
-      result = ((Pair<K, V>) this.pairs[index]).value();
-    } // if
-    this.pairs[index] = new Pair<K, V>(key, value);
+    if (this.pairs[index] != null) {
+      Pair<K,V> pair = (Pair<K, V>) pairs[index];
+      result = pair.value();
+    } else {
+      this.size++;
+    }
+    this.pairs[index] = new Pair<>(key, value);
     // Report activity, if appropriate
     if (REPORT_BASIC_CALLS && (reporter != null)) {
       reporter.report("pairs[" + index + "] = " + key + ":" + value);
     } // if reporter != null
     // Note that we've incremented the size.
-    if (result == null) {
-      ++this.size;
-    } // if
+    if(this.pairs[index] == null) {
+      throw new IndexOutOfBoundsException("Not set: " + ((Pair<K, V>) pairs[index]).value());
+    }
     // And we're done
     return result;
   } // set(K, V)
@@ -366,27 +388,27 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   void expand() {
     // Figure out the size of the new table.
-    int newCapacity = 2 * this.pairs.length + rand.nextInt(20);
+    int newCapacity = 2 * this.pairs.length + rand.nextInt(10);
+
+    while (newCapacity % PROBE_OFFSET == 0) {
+      newCapacity++;
+    } // while-loop
+
     if (REPORT_BASIC_CALLS && (reporter != null)) {
       reporter.report("Expanding to " + newCapacity + " elements.");
     } // if reporter != null
 
-    while (newCapacity % PROBE_OFFSET == 0) {
-      newCapacity++;
-    }
     // Create a new table of that capacity
-    Object[] old = new Object[this.pairs.length];
+    Object[] old = this.pairs;
+    this.pairs = new Object[newCapacity];
+    //this.size = 0;
     for (int i = 0; i < old.length; i++) {
-      old[i] = this.pairs[i];  // HashTableExperiments.matchingKeysExpt(pen, htab);
+      if (old[i] != null) {
+        @SuppressWarnings("unchecked")
+        Pair<K, V> pair = (Pair<K,V>) old[i];
+        this.set(pair.key(), pair.value());
+      }  // HashTableExperiments.matchingKeysExpt(pen, htab);
     } // for-loop
-
-    pairs = new Object[newCapacity];
-
-    // Move all the values from the old table to their appropriate 
-    // location in the new table.
-    for (int i = 0; i < old.length; i++) {
-      this.pairs[i] = old[i];
-    } // for    // And update our pairs
   } // expand()
 
   /**
@@ -400,25 +422,16 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   int find(K key) {
     int index = Math.abs(key.hashCode()) % this.pairs.length;
-    int originalIndex = index;
 
-    while(pairs[index] != null) {
-      if (pairs[index] instanceof Pair) {
-        @SuppressWarnings("unchecked")
-        Pair<K, V> pair = (Pair<K, V>) pairs[index];
-        if (pair.key().equals(key)) {
-         return index;
-        }
-      }
-      
+    while (this.pairs[index] != null) {
+      @SuppressWarnings("unchecked")
+      Pair<K, V> pair = (Pair<K, V>) this.pairs[index];
+      if (pair.key().equals(key)) {
+        return index;
+      } // if
       index = (index + (int) PROBE_OFFSET) % this.pairs.length;
-
-      if(index == originalIndex) {
-        throw new IllegalStateException("Table is full");
-      }
     }
     return index;
   } // find(K)
-
 } // class ProbedHashTable<K, V>
 
